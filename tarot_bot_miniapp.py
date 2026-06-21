@@ -3,9 +3,9 @@ import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 
-BOT_TOKEN   = "ВАШ_ТОКЕН"
-ADMIN_ID    = 123456789
-MINIAPP_URL = "https://ВАШ_USERNAME.github.io/tarot-miniapp/"
+BOT_TOKEN   = "8663679950:AAH_Tnx9mtotMohwyc_KP2OK4YTuQTIq7Qk"
+ADMIN_ID    = 1470728379
+MINIAPP_URL = "https://kamaltdinovartem2007-max.github.io/tarot-miniapp/"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
 log = logging.getLogger(__name__)
