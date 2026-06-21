@@ -40,16 +40,13 @@ async def handle_web_app_data(update: Update, ctx: ContextTypes.DEFAULT_TYPE) ->
     except json.JSONDecodeError:
         return
 
-    # Сохраняем в постоянное хранилище
     if "requests" not in ctx.bot_data:
         ctx.bot_data["requests"] = {}
     uid = str(user.id)
     if uid not in ctx.bot_data["requests"]:
         ctx.bot_data["requests"][uid] = []
-
-    req_id = len(ctx.bot_data["requests"][uid]) + 1
     ctx.bot_data["requests"][uid].append({
-        "id":     req_id,
+        "id":     len(ctx.bot_data["requests"][uid]) + 1,
         "spread": data.get("spread", "—"),
         "price":  data.get("price",  "—"),
         "status": "pending",
@@ -64,31 +61,60 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> Non
         parts = data.split(":")
         action = parts[0]
         client_id = int(parts[1]) if parts[1] else None
-        req_idx = int(parts[2]) if len(parts) > 2 else -1
         new_status = "accepted" if action == "accept" else "done"
         status_label = STATUSES[new_status]
 
-        # Обновляем статус в хранилище
+        # Парсим заявку из текста сообщения и сохраняем в историю
         if client_id:
             uid = str(client_id)
-            reqs = ctx.bot_data.get("requests", {}).get(uid, [])
-            if reqs and 0 <= req_idx < len(reqs):
-                reqs[req_idx]["status"] = new_status
+            if "requests" not in ctx.bot_data:
+                ctx.bot_data["requests"] = {}
 
+            msg_text = q.message.text
+            spread = "—"
+            price  = "—"
+            for line in msg_text.split("\n"):
+                if "Расклад:" in line: spread = line.split("Расклад:")[-1].strip()
+                if "Цена:"    in line: price  = line.split("Цена:")[-1].strip()
+
+            if uid not in ctx.bot_data["requests"]:
+                ctx.bot_data["requests"][uid] = []
+
+            # Проверяем есть ли уже такая заявка
+            existing = ctx.bot_data["requests"][uid]
+            found = False
+            for r in existing:
+                if r["spread"] == spread and r["status"] == "pending":
+                    r["status"] = new_status
+                    found = True
+                    break
+            if not found:
+                existing.append({
+                    "id":     len(existing) + 1,
+                    "spread": spread,
+                    "price":  price,
+                    "status": new_status,
+                })
+
+        # Обновляем сообщение у девушки
         old_text = q.message.text
         new_text = old_text.replace("🟡 Ожидает", status_label).replace("🟢 Принято", status_label)
 
         if new_status == "accepted":
             kb = InlineKeyboardMarkup([[
-                InlineKeyboardButton("✅ Выполнено", callback_data=f"done:{client_id}:{req_idx}")
+                InlineKeyboardButton("✅ Выполнено", callback_data=f"done:{client_id}")
             ]])
         else:
             kb = InlineKeyboardMarkup([[
                 InlineKeyboardButton("☑️ Закрыто", callback_data="noop")
             ]])
 
-        await q.edit_message_text(new_text, reply_markup=kb)
+        try:
+            await q.edit_message_text(new_text, reply_markup=kb)
+        except Exception:
+            pass
 
+        # Уведомление клиенту
         if client_id:
             notify = {
                 "accepted": "🟢 Твоя заявка принята!\n\nСкоро выйду на связь 🌙",
