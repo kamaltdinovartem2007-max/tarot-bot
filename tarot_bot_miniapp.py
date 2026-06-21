@@ -97,9 +97,10 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> Non
         await q.edit_message_text(
             "\n".join(lines),
             parse_mode="Markdown",
-            reply_markup=InlineKeyboardMarkup([[
-                InlineKeyboardButton("← Назад", callback_data="back_start")
-            ]])
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔮 Записаться", web_app=WebAppInfo(url=MINIAPP_URL))],
+                [InlineKeyboardButton("← Главное меню", callback_data="back_start")],
+            ])
         )
         return
 
