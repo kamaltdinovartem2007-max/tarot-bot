@@ -84,9 +84,11 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> Non
         if not requests:
             await q.edit_message_text(
                 "У тебя пока нет заявок.\n\nЗапишись на расклад 🔮",
-                reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("🔮 Записаться", web_app=WebAppInfo(url=MINIAPP_URL))
-                ]])
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🔮 Записаться на расклад", web_app=WebAppInfo(url=MINIAPP_URL))],
+                    [InlineKeyboardButton("📋 Мои заявки", callback_data="my_requests")],
+                    [InlineKeyboardButton("❓ Что такое таро?", callback_data="about")],
+                ])
             )
             return
 
