@@ -39,7 +39,9 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 async def handle_web_app_data(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
-    raw  = update.effective_message.web_app_data.data
+    if not update.effective_message.web_app_data:
+        return
+    raw = update.effective_message.web_app_data.data
     user = update.effective_user
     try:
         data = json.loads(raw)
@@ -172,7 +174,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> Non
 def main() -> None:
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, handle_web_app_data))
+    app.add_handler(MessageHandler(filters.ALL, handle_web_app_data))
     app.add_handler(CallbackQueryHandler(handle_callback))
     log.info("Бот запущен 🔮")
     app.run_polling()
