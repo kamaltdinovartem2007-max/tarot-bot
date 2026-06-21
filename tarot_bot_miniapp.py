@@ -39,8 +39,11 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 async def handle_web_app_data(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    log.info(f"Получено сообщение: {update.effective_message}")
     if not update.effective_message.web_app_data:
+        log.info("web_app_data отсутствует")
         return
+    log.info(f"web_app_data: {update.effective_message.web_app_data.data}")
     raw = update.effective_message.web_app_data.data
     user = update.effective_user
     try:
